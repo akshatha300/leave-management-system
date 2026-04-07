@@ -11,10 +11,36 @@ import ManageUsers from '@/pages/ManageUsers';
 import LeaveApplication from '@/pages/LeaveApplication';
 import LeaveHistory from '@/pages/LeaveHistory';
 import LeaveApproval from '@/pages/LeaveApproval';
+import DepartmentReports from '@/pages/DepartmentReports';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, logout } from '@/store/slices/authSlice';
+import { type RootState } from '@/store';
+import api from '@/services/api';
 
 const Unauthorized = () => <div>Unauthorized</div>;
 
 function App() {
+  const dispatch = useDispatch();
+  const { token, user } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      // If we have a token but no user object, fetch the profile
+      if (token && !user) {
+        try {
+          const { data } = await api.get('/auth/me');
+          dispatch(setUser(data));
+        } catch (err) {
+          console.error('Session restoration failed:', err);
+          dispatch(logout());
+        }
+      }
+    };
+
+    restoreSession();
+  }, [token, user, dispatch]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -52,6 +78,9 @@ function App() {
             <Route path="/leave/history" element={<LeaveHistory />} />
             <Route element={<ProtectedRoute allowedRoles={['Professor', 'HOD', 'Principal']} />}>
               <Route path="/leave/approvals" element={<LeaveApproval />} />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={['HOD', 'Principal']} />}>
+              <Route path="/department/reports" element={<DepartmentReports />} />
             </Route>
             
           </Route>

@@ -21,9 +21,12 @@ export default function Sidebar() {
   };
 
   const getMenuItems = () => {
-    const baseItems = [
-      { name: 'Dashboard', path: `/${user.role.toLowerCase()}/dashboard`, icon: Home },
-    ];
+    const baseItems = [];
+    
+    // Add Dashboard as the first item for all roles except Principal (who uses University Overview)
+    if (user.role !== 'Principal') {
+      baseItems.push({ name: 'Dashboard', path: `/${user.role.toLowerCase()}/dashboard`, icon: Home });
+    }
 
     if (user.role === 'Student') {
       baseItems.push(
@@ -46,6 +49,7 @@ export default function Sidebar() {
     } else if (user.role === 'Principal') {
       baseItems.push(
         { name: 'University Overview', path: '/principal/dashboard', icon: BarChart },
+        { name: 'Department Reports', path: '/department/reports', icon: BarChart },
         { name: 'Pending Approvals', path: '/leave/approvals', icon: CheckSquare },
         { name: 'Manage Users', path: '/manage-users', icon: Users }
       );
@@ -58,8 +62,8 @@ export default function Sidebar() {
   const menuItems = getMenuItems();
 
   return (
-    <aside className="w-64 bg-card border-r hidden md:flex flex-col h-full">
-      <div className="p-6 border-b flex-shrink-0">
+    <aside className="w-64 bg-card border-r flex flex-col h-full z-50 shadow-2xl relative">
+      <div className="p-6 border-b flex-shrink-0 bg-card">
         <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">UMS Dash</h2>
       </div>
       
