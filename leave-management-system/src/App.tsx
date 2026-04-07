@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/layouts/ProtectedRoute';
 import MainLayout from '@/components/layouts/MainLayout';
 import Login from '@/pages/Login';
+import SignUp from '@/pages/SignUp';
 import StudentDashboard from '@/pages/StudentDashboard';
 import ProfessorDashboard from '@/pages/ProfessorDashboard';
 import HodDashboard from '@/pages/HodDashboard';
@@ -18,6 +19,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Protected Dashboard Routes */}
