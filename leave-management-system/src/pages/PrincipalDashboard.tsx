@@ -18,13 +18,18 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
 export default function PrincipalDashboard() {
   const navigate = useNavigate();
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+  const [stats, setStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await api.get('/leaves/pending');
-        setPendingApprovals(data);
+        const [pendingRes, statsRes] = await Promise.all([
+          api.get('/leaves/pending'),
+          api.get('/leaves/stats')
+        ]);
+        setPendingApprovals(pendingRes.data);
+        setStats(statsRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -121,7 +126,7 @@ export default function PrincipalDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={deptData}
+                    data={stats.length > 0 ? stats : deptData}
                     cx="50%"
                     cy="50%"
                     innerRadius={70}
@@ -132,7 +137,7 @@ export default function PrincipalDashboard() {
                     dataKey="value"
                     cornerRadius={6}
                   >
-                    {deptData.map((_entry, index) => (
+                    {(stats.length > 0 ? stats : deptData).map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

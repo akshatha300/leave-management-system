@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CheckCircle2, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import api from '@/services/api';
 import { useSelector } from 'react-redux';
@@ -17,7 +19,10 @@ export default function LeaveApplication() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState('');
+  
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +49,9 @@ export default function LeaveApplication() {
 
     try {
       await api.post('/leaves/apply', formData);
-      setMessage('Leave applied successfully! Your supervisor will be notified.');
-      setFormData({ type: 'Sick Leave', startDate: '', endDate: '', reason: '' });
+      setIsSuccess(true);
+      // Auto-navigate back after 5 seconds if they don't click anything
+      setTimeout(() => navigate(-1), 5000);
     } catch (err: any) {
       setMessage(err.response?.data?.message || 'Error applying for leave.');
     } finally {
@@ -54,6 +60,42 @@ export default function LeaveApplication() {
   };
 
   const todayStr = new Date().toISOString().split('T')[0];
+
+  if (isSuccess) {
+    return (
+      <div className="max-w-md mx-auto py-20 animate-in zoom-in duration-500">
+        <Card className="border-none shadow-2xl bg-card/80 backdrop-blur-md text-center p-10 space-y-6">
+          <div className="flex justify-center">
+            <div className="h-20 w-20 bg-green-500/10 rounded-full flex items-center justify-center animate-bounce">
+              <CheckCircle2 className="h-12 w-12 text-green-500" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-black text-foreground">Request Sent!</CardTitle>
+            <CardDescription className="text-base font-medium">
+              Your leave application for <span className="text-primary font-bold">{formData.type}</span> has been submitted successfully.
+            </CardDescription>
+          </div>
+          <div className="p-4 bg-muted/30 rounded-xl text-left border border-border/50">
+            <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">
+              <Calendar className="h-3 w-3" /> Duration
+            </div>
+            <div className="text-sm font-bold">
+              {new Date(formData.startDate).toLocaleDateString()} — {new Date(formData.endDate).toLocaleDateString()}
+            </div>
+          </div>
+          <div className="space-y-3 pt-4">
+            <Button onClick={() => navigate(-1)} className="w-full h-12 font-bold shadow-lg shadow-primary/20">
+              Go to Dashboard
+            </Button>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">
+              Redirecting automatically in 5s...
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -1,4 +1,42 @@
 const Leave = require('../models/Leave');
+const User = require('../models/User');
+
+// @desc    Get leave statistics for departments
+// @route   GET /api/leaves/stats
+// @access  Private (Principal, HOD)
+const getLeaveStats = async (req, res) => {
+  try {
+    // Aggregate leaves by department of the applicant
+    const stats = await Leave.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'applicant',
+          foreignField: '_id',
+          as: 'applicantDetails'
+        }
+      },
+      { $unwind: '$applicantDetails' },
+      {
+        $group: {
+          _id: '$applicantDetails.department',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          name: '$_id',
+          value: '$count',
+          _id: 0
+        }
+      }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // @desc    Apply for leave
 // @route   POST /api/leaves/apply
@@ -95,5 +133,6 @@ module.exports = {
   applyLeave,
   getMyLeaves,
   getPendingLeaves,
-  approveLeave
+  approveLeave,
+  getLeaveStats
 };
